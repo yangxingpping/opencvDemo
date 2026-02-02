@@ -11,26 +11,25 @@ using namespace cv;
 
 int main(void)
 {
-    Mat image = imread("1.jpg");
-    Mat gray;
-    Mat edges;
-    if (image.empty()) 
-    {
-        SPDLOG_INFO("import file failed");
-        return -1;
-    }
-	cvtColor(image, gray, COLOR_BGR2GRAY);
-	Canny(gray, edges, 100, 200);
-    vector<vector<Point>> contours;
-    vector<Vec4i> hierarchy;
-    findContours(edges, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    cv::VideoCapture cap("1.mkv");
+    cv::VideoWriter writer;
 
-    Mat result = image.clone();
-    drawContours(result, contours, -1, Scalar(0, 255, 0), 2);
-    namedWindow("hehe", WINDOW_NORMAL);
-    resizeWindow("hehe", 800, 600);
-    imshow("hehe", result);
-    waitKey(0);
-	SPDLOG_INFO("hello,world {}", fmt::format("{} next", 0.1));
+    int fps = cap.get(cv::CAP_PROP_FPS);
+    cv::Size size(cap.get(cv::CAP_PROP_FRAME_WIDTH),
+        cap.get(cv::CAP_PROP_FRAME_HEIGHT));
+
+    writer.open("output.mp4",
+        cv::VideoWriter::fourcc('H', '2', '6', '4'),
+        fps, size);
+
+    cv::Mat frame;
+    while (cap.read(frame)) {
+        // 处理帧
+        cv::cvtColor(frame, frame, cv::COLOR_BGRA2RGBA);
+        writer.write(frame);
+    }
+
+    cap.release();
+    writer.release();
 	return 0;
 }
